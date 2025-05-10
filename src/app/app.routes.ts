@@ -8,14 +8,11 @@ import { ProfileEditComponent } from './shared/components/profile-edit/profile-e
 
 export const routes: Routes = [
     {
-<<<<<<< HEAD
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
     },
     {
-=======
->>>>>>> c97cefb7cbba9054ffe2602e699819683202ed10
         path: 'register',
         component: RegisterComponent,
     },

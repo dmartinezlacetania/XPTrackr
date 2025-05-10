@@ -54,11 +54,11 @@ export class ProfileEditComponent implements OnInit {
   passwordMatchValidator(group: FormGroup) {
     const newPassword = group.get('new_password')?.value;
     const confirmPassword = group.get('new_password_confirmation')?.value;
-    
+
     if (!newPassword && !confirmPassword) {
       return null;
     }
-    
+
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
@@ -66,8 +66,7 @@ export class ProfileEditComponent implements OnInit {
     if (this.editForm.valid) {
       this.loading = true;
       this.errorMessage = '';
-<<<<<<< HEAD
-      
+
       const payload = { ...this.editForm.value }; // Crear una copia de los valores del formulario
 
       // Si new_password no se proporciona (está vacío),
@@ -83,22 +82,14 @@ export class ProfileEditComponent implements OnInit {
       try {
         // Enviar el payload modificado al servicio
         await this.authService.updateProfile(payload);
-=======
-      try {
-        // Aquí iría la llamada al servicio de actualización de perfil
-        await this.authService.updateProfile(this.editForm.value);
->>>>>>> c97cefb7cbba9054ffe2602e699819683202ed10
-        this.router.navigate(['/profile']);
+        this.router.navigate(['/profile']); // Navegar después de una actualización exitosa
       } catch (error: any) {
         this.errorMessage = error?.response?.data?.message || 'Error al actualizar el perfil.';
       } finally {
-        this.loading = false;
+        this.loading = false; // Asegurarse de que loading se establece en false
       }
     } else {
-<<<<<<< HEAD
-      // Marcar todos los campos como tocados para mostrar errores de validación si es necesario
-=======
->>>>>>> c97cefb7cbba9054ffe2602e699819683202ed10
+      // Si el formulario no es válido, marcar todos los campos como tocados para mostrar errores.
       this.editForm.markAllAsTouched();
     }
   }

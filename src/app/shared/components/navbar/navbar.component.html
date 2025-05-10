@@ -31,18 +31,9 @@
             <div *ngIf="isAuthenticated" class="relative group" #userMenuDropdown>
                 <button (click)="toggleUserMenu()"
                     class="user-menu-button relative flex items-center space-x-2 text-white focus:outline-none cursor-pointer transition duration-200">
-                    <!-- Contenedor del Avatar/Inicial -->
-                    <div class="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden border border-white/50">
-                        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="h-full w-full object-cover">
-                        <div *ngIf="!avatarUrl && username"
-                             class="h-full w-full flex items-center justify-center bg-blue-300 text-blue-700 font-medium text-sm">
-                            {{ username.charAt(0).toUpperCase() }}
-                        </div>
-                        <!-- Opcional: Placeholder si no hay avatar y el nombre de usuario aún no se ha cargado -->
-                        <div *ngIf="!avatarUrl && !username"
-                             class="h-full w-full flex items-center justify-center bg-gray-400">
-                            <!-- Puedes poner un ícono de usuario genérico aquí si lo deseas -->
-                        </div>
+                    <div
+                        class="h-8 w-8 rounded-full bg-blue-300 flex items-center justify-center text-blue-700 font-medium">
+                        {{ username.charAt(0).toUpperCase() }}
                     </div>
                     <span>{{ username }}</span>
                     <svg class="h-4 w-4" [ngClass]="{'transform rotate-180': isUserMenuOpen}" fill="none"

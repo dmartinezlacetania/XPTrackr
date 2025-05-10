@@ -73,5 +73,11 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   //   }
   // }
 
+<<<<<<< HEAD
 
+=======
+  onImageError() {
+    this.avatarUrl = '/images/default-avatar.png';
+  }
+>>>>>>> c97cefb7cbba9054ffe2602e699819683202ed10
 }

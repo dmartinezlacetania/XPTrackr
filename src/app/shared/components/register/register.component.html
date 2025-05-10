@@ -1,0 +1,79 @@
+<div class="flex justify-center items-center h-screen bg-gray-100">
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
+      <h2 class="block text-gray-700 text-2xl font-bold mb-6 text-center">Registrarse</h2>
+      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Nombre:</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="Tu nombre"
+          />
+          <div *ngIf="registroForm.controls['name'].invalid && registroForm.controls['name'].touched" class="text-red-500 text-xs italic mt-1">
+            El nombre es requerido.
+          </div>
+        </div>
+  
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Correo electrónico:</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="Tu correo electrónico"
+          />
+          <div *ngIf="registroForm.controls['email'].invalid && registroForm.controls['email'].touched" class="text-red-500 text-xs italic mt-1">
+            <div *ngIf="registroForm.controls['email'].errors?.['required']">El correo electrónico es requerido.</div>
+            <div *ngIf="registroForm.controls['email'].errors?.['email']">El correo electrónico debe ser válido.</div>
+          </div>
+        </div>
+  
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Contraseña:</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="Tu contraseña"
+          />
+          <div *ngIf="registroForm.controls['password'].invalid && registroForm.controls['password'].touched" class="text-red-500 text-xs italic mt-1">
+            La contraseña es requerida.
+          </div>
+        </div>
+  
+        <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">Confirmar contraseña:</label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="password_confirmation"
+            type="password"
+            formControlName="password_confirmation"
+            placeholder="Confirma tu contraseña"
+          />
+          <div *ngIf="registroForm.controls['password_confirmation'].invalid && registroForm.controls['password_confirmation'].touched" class="text-red-500 text-xs italic mt-1">
+            La confirmación de la contraseña es requerida.
+          </div>
+          <div *ngIf="registroForm.errors?.['passwordMismatch']" class="text-red-500 text-xs italic mt-1">
+            Las contraseñas no coinciden.
+          </div>
+        </div>
+  
+        <div class="flex items-center justify-center">
+          <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+            [disabled]="loading"
+          >
+            <span *ngIf="loading">Cargando...</span>
+            <span *ngIf="!loading">Registrarse</span>
+          </button>
+        </div>
+  
+        <div *ngIf="errorMessage" class="text-red-500 text-center mt-4">{{ errorMessage }}</div>
+      </form>
+    </div>
+  </div>

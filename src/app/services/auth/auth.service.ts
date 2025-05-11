@@ -62,27 +62,27 @@ export class AuthService {
     }
   }
 
-  async updateProfile(data: any) {
-    try {
-      await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
-      const response = await axios.post(`${this._apiUrl}/api/update-profile`, data);
+  async updateProfile(data: any) { 
+    try { 
+      await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`); 
+      const response = await axios.post(`${this._apiUrl}/api/update-profile`, data); 
       
-      if (response.data.user) {
-        this.user = response.data.user;
+      // Actualizar token si viene en la respuesta
+      if (response.data.auth_token) {
+        document.cookie = `auth_token=${response.data.auth_token}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
       }
       
-      // Si se actualizó la contraseña, forzamos un nuevo login
-      if (data.new_password) {
-        await this.login({
-          email: data.email,
-          password: data.new_password
-        });
+      if (response.data.user) { 
+        this.user = response.data.user; 
+        this.authStatusSubject.next(true);
+      } else { 
+        await this.getUser(true); 
       }
       
-      return response;
-    } catch (error) {
-      throw error;
-    }
+      return response; 
+    } catch (error) { 
+      throw error; 
+    } 
   }
 
   async isAuthenticated(): Promise<boolean> {

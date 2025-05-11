@@ -11,10 +11,6 @@
         <div class="hidden md:flex items-center space-x-6">
             <a *ngIf="isAuthenticated" routerLink="/dashboard" routerLinkActive="text-white font-semibold"
                 class="text-gray-200 hover:text-white transition duration-200">Dashboard</a>
-            <a *ngIf="isAuthenticated" routerLink="/stats" routerLinkActive="text-white font-semibold"
-                class="text-gray-200 hover:text-white transition duration-200">Estadísticas</a>
-            <a *ngIf="isAuthenticated" routerLink="/activities" routerLinkActive="text-white font-semibold"
-                class="text-gray-200 hover:text-white transition duration-200">Actividades</a>
 
             <a *ngIf="!isAuthenticated" routerLink="/features" routerLinkActive="text-white font-semibold"
                 class="text-gray-200 hover:text-white transition duration-200">Funciones</a>
@@ -23,6 +19,14 @@
         </div>
 
         <div class="flex items-center space-x-4">
+            <!-- Botón de búsqueda -->
+            <button (click)="toggleSearch()" 
+                    class="text-gray-200 hover:text-white transition duration-200 focus:outline-none p-2 bg-blue-700 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            
             <a *ngIf="!isAuthenticated" routerLink="/login"
                 class="text-gray-200 hover:text-white transition duration-200">Iniciar sesión</a>
             <a *ngIf="!isAuthenticated" routerLink="/register"
@@ -96,5 +100,12 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Contenedor de búsqueda (aparece debajo de la navbar) -->
+    <div *ngIf="isSearchOpen" 
+         class="absolute left-0 right-0 bg-white shadow-lg p-4 z-50 border-t border-gray-200"
+         style="top: 64px; min-height: 80px;">
+        <app-game-search [showResults]="isSearchOpen" (closeResults)="closeSearch()"></app-game-search>
     </div>
 </nav>

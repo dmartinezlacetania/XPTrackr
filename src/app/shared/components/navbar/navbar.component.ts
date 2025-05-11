@@ -3,12 +3,13 @@ import { AuthService } from '../../../services/auth/auth.service'; // Asegúrate
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { GameSearchComponent } from '../game-search/game-search.component';
 
 
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, GameSearchComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -61,5 +62,21 @@ export class NavbarComponent implements OnInit {
   async logout(): Promise<void> {
     await this.authService.logout();
     // authStatus$ se actualiza automáticamente, y el suscriptor en ngOnInit limpiará username y avatarUrl
+  }
+
+  isSearchOpen = false;
+
+  toggleSearch() {
+    console.log('Toggle Search clicked, current state:', this.isSearchOpen);
+    this.isSearchOpen = !this.isSearchOpen;
+    console.log('New state:', this.isSearchOpen);
+    // Si abrimos la búsqueda, cerramos el menú de usuario si está abierto
+    if (this.isSearchOpen && this.isUserMenuOpen) {
+      this.isUserMenuOpen = false;
+    }
+  }
+
+  closeSearch() {
+    this.isSearchOpen = false;
   }
 }

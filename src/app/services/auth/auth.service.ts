@@ -67,11 +67,6 @@ export class AuthService {
       await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`); 
       const response = await axios.post(`${this._apiUrl}/api/update-profile`, data); 
       
-      // Actualizar token si viene en la respuesta
-      if (response.data.auth_token) {
-        document.cookie = `auth_token=${response.data.auth_token}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
-      }
-      
       if (response.data.user) { 
         this.user = response.data.user; 
         this.authStatusSubject.next(true);

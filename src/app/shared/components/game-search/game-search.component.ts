@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, Subject, switchMap, catchError } from 'rxjs';
 import { of } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-game-search',
@@ -22,9 +23,8 @@ export class GameSearchComponent {
   errorMessage = '';
   private searchTerms = new Subject<string>();
   
-  // Reemplaza esto con tu API key de RAWG
-  private apiKey = '9aec84ffef7d443e911dacc052cfbb79';
-  private apiUrl = 'https://api.rawg.io/api/games';
+  // URL de la API desde el entorno
+  private apiUrl = `${environment.apiUrl}/api/games`;
 
   constructor(private http: HttpClient) {
     this.searchTerms.pipe(
@@ -62,7 +62,6 @@ export class GameSearchComponent {
   private searchGames(query: string) {
     return this.http.get<any>(`${this.apiUrl}`, {
       params: {
-        key: this.apiKey,
         search: query,
         page_size: '5'
       }
@@ -70,6 +69,8 @@ export class GameSearchComponent {
       switchMap(response => {
         if (response && response.results) {
           return of(response.results);
+        } else if (response) {
+          return of(response);
         }
         return of([]);
       }),

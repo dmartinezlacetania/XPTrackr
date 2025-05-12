@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, Subject, switchMap, catchError } from 'rxjs';
 import { of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-game-search',
@@ -26,7 +27,7 @@ export class GameSearchComponent {
   // URL de la API desde el entorno
   private apiUrl = `${environment.apiUrl}/api/games`;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.searchTerms.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -80,5 +81,10 @@ export class GameSearchComponent {
         return of([]);
       })
     );
+  }
+
+  viewGameDetails(gameId: number): void {
+    this.router.navigate(['/games', gameId]);
+    this.close(); // Cerramos el buscador
   }
 }

@@ -5,6 +5,7 @@ import { DashboardComponent } from './shared/components/dashboard/dashboard.comp
 import { authGuard } from './guards/auth.guard';
 import { ProfileViewComponent } from './shared/components/profile-view/profile-view.component';
 import { ProfileEditComponent } from './shared/components/profile-edit/profile-edit.component';
+import { GameDetailComponent } from './shared/components/game-detail/game-detail.component';
 
 export const routes: Routes = [
     {
@@ -36,11 +37,15 @@ export const routes: Routes = [
         canActivate: [authGuard]
     },
     {
+        path: 'games/:id',
+        component: GameDetailComponent,
+        canActivate: [authGuard]
+    },
+    {
         path: '**',
         redirectTo: 'dashboard',
         pathMatch: 'full'
     }
-
 ];
 
 

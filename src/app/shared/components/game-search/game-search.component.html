@@ -44,7 +44,9 @@
     
     <div *ngIf="!isLoading">
       <div *ngIf="searchResults.length > 0; else noResults">
-        <div *ngFor="let game of searchResults" class="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0">
+        <div *ngFor="let game of searchResults" 
+             class="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+             (click)="viewGameDetails(game.id)">
           <div class="flex items-center">
             <img *ngIf="game.background_image" [src]="game.background_image" alt="{{ game.name }}" class="h-12 w-12 object-cover rounded mr-3">
             <div *ngIf="!game.background_image" class="h-12 w-12 bg-gray-200 rounded mr-3 flex items-center justify-center text-gray-500">

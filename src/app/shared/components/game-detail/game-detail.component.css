@@ -1,0 +1,8 @@
+/* Estilos adicionales si son necesarios */
+.description-text {
+    line-height: 1.6;
+  }
+  
+  .rating-bar {
+    transition: width 0.5s ease;
+  }

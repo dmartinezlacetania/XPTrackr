@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import axios from 'axios';
 import { BehaviorSubject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
@@ -10,7 +11,7 @@ axios.defaults.withXSRFToken = true;
 })
 export class AuthService {
 
-  private readonly _apiUrl = 'http://localhost:8000';
+  private readonly _apiUrl = environment.apiUrl;
 
   // Método específico para obtener la URL del avatar
   getAvatarUrl(avatarName: string): string {
@@ -23,7 +24,7 @@ export class AuthService {
 
   async register(data: any) {
     await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
-    const response = await axios.post(`${this._apiUrl}/api/register`, data);
+    const response = await axios.post(`${this._apiUrl}/register`, data);
     this.authStatusSubject.next(true);
     this.user = response.data.user; // Si el backend lo devuelve
     return response;

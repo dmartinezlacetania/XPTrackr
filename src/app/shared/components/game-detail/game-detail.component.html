@@ -31,6 +31,21 @@
             <span *ngIf="game.released" class="text-gray-300 mr-4">{{ game.released | date:'dd/MM/yyyy' }}</span>
             <span *ngIf="game.metacritic" class="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">{{ game.metacritic }}</span>
           </div>
+          <!-- NUEVA SECCIÓN PARA CAMBIAR EL ESTADO DEL JUEGO -->
+          <div class="mt-4 flex items-center gap-2">
+            <label for="gameStatus" class="text-white font-medium">Estado:</label>
+            <select id="gameStatus" [(ngModel)]="selectedStatus" class="rounded px-2 py-1">
+              <option [ngValue]="null" disabled>Selecciona un estado</option>
+              <option [ngValue]="GameStatus.PLAYING">Jugando</option>
+              <option [ngValue]="GameStatus.PLAN_TO_PLAY">Pendiente</option>
+              <option [ngValue]="GameStatus.COMPLETED">Completado</option>
+              <option [ngValue]="GameStatus.DROPPED">Abandonado</option>
+              <option [ngValue]="GameStatus.ON_HOLD">En pausa</option>
+            </select>
+            <button (click)="updateGameStatus(selectedStatus!)" [disabled]="!selectedStatus" class="ml-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Guardar
+            </button>
+          </div>
         </div>
       </div>
   

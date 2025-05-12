@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GamesService } from '../../../services/games/games.service';
-import { HttpClientModule } from '@angular/common/http';
+import { LibraryService, GameStatus } from '../../../services/library/library.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-game-detail',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, FormsModule], // <-- AÑADE FormsModule AQUÍ
   templateUrl: './game-detail.component.html',
   styleUrls: ['./game-detail.component.css']
 })
@@ -20,7 +21,8 @@ export class GameDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private gamesService: GamesService
+    private gamesService: GamesService,
+    private libraryService: LibraryService
   ) { }
 
   ngOnInit(): void {
@@ -50,4 +52,20 @@ export class GameDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/games']);
   }
+
+  updateGameStatus(status: GameStatus | null): void {
+    if (!status) return;
+    console.log(`Status updated to: ${status}`);
+    this.libraryService.addToLibrary(this.gameId, status).subscribe({
+      next: () => {
+        console.log('Juego añadido correctamente');
+      },
+      error: (err) => {
+        console.error('Error al añadir:', err);
+        this.error = 'Error al guardar el juego';
+      }
+    });
+  }
+  GameStatus = GameStatus; // Para usar en el template
+  selectedStatus: GameStatus | null = null;
 }

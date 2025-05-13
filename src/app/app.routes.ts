@@ -6,6 +6,8 @@ import { authGuard } from './guards/auth.guard';
 import { ProfileViewComponent } from './shared/components/profile-view/profile-view.component';
 import { ProfileEditComponent } from './shared/components/profile-edit/profile-edit.component';
 import { GameDetailComponent } from './shared/components/game-detail/game-detail.component';
+import { FriendsComponent } from './shared/components/friends/friends.component';
+
 
 export const routes: Routes = [
     {
@@ -39,6 +41,11 @@ export const routes: Routes = [
     {
         path: 'games/:id',
         component: GameDetailComponent,
+    },
+    {
+        path: 'friends',
+        component: FriendsComponent,
+        canActivate: [authGuard]
     },
     {
         path: '**',

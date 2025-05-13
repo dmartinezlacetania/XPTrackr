@@ -1,0 +1,190 @@
+<div class="max-w-4xl mx-auto py-10 px-4 sm:px-6">
+    <!-- Encabezado principal con efecto de gradiente -->
+    <div class="mb-10">
+        <h2
+            class="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            Mi Red Social
+        </h2>
+        <p class="text-gray-500">Gestiona tus conexiones y encuentra nuevos amigos</p>
+    </div>
+
+    <!-- Sección de búsqueda de usuarios -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Buscar Usuarios
+        </h3>
+
+        <div class="relative mb-6">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input [(ngModel)]="searchQuery" (ngModelChange)="searchUsers()" placeholder="Buscar por nombre o email"
+                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" />
+        </div>
+
+        <div *ngIf="searchQuery && searchResults.length === 0" class="text-center py-8 text-gray-500">
+            No se encontraron usuarios con "{{ searchQuery }}"
+        </div>
+
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <li *ngFor="let user of searchResults"
+                class="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-all duration-300 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <!-- Avatar generado con iniciales -->
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg mr-3">
+                            {{ user.name ? user.name.charAt(0).toUpperCase() : 'U' }}
+                        </div>
+                        <div>
+                            <a [routerLink]="['/profile', user.id]"
+                                class="font-semibold text-gray-800 hover:text-purple-600 transition-colors">
+                                {{ user.name }}
+                            </a>
+                        </div>
+                    </div>
+                    <button (click)="sendRequest(user.id)"
+                        class="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-sm hover:shadow flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        Enviar
+                    </button>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sección de amigos actuales -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-500" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Mis Amigos
+            </h2>
+            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                {{ friends.length }} amigos
+            </span>
+        </div>
+
+        <div *ngIf="friends.length === 0" class="bg-gray-50 rounded-xl p-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <p class="text-gray-600 mb-2">No tienes amigos aún</p>
+            <p class="text-gray-500 text-sm">Busca usuarios y envía solicitudes para conectar</p>
+        </div>
+
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <li *ngFor="let friend of friends"
+                class="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-all duration-300 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <!-- Avatar generado con iniciales -->
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg mr-3">
+                            {{ friend.name ? friend.name.charAt(0).toUpperCase() : 'U' }}
+                        </div>
+                        <div>
+                            <a [routerLink]="['/profile', friend.id]"
+                                class="font-semibold text-gray-800 hover:text-purple-600 transition-colors">
+                                {{ friend.name || 'Amigo' }}
+                            </a>
+                        </div>
+                    </div>
+                    <button (click)="deleteFriend(friend.id)" class="group relative">
+                        <div
+                            class="absolute -top-10 right-0 bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            Eliminar amigo
+                        </div>
+                        <div
+                            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Sección de solicitudes recibidas -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-indigo-500" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                </svg>
+                Solicitudes Recibidas
+            </h3>
+            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                {{ receivedRequests.length }} pendientes
+            </span>
+        </div>
+
+        <div *ngIf="receivedRequests.length === 0" class="bg-gray-50 rounded-xl p-6 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 mb-3" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <p class="text-gray-500">No tienes solicitudes pendientes</p>
+        </div>
+
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <li *ngFor="let req of receivedRequests"
+                class="bg-indigo-50 rounded-xl p-4 border border-indigo-100 animate-pulse-subtle">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <!-- Avatar generado con iniciales -->
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg mr-3">
+                            {{ req?.name ? req.name.charAt(0).toUpperCase() : 'U' }}
+                        </div>
+                        <div>
+                            <a [routerLink]="['/profile', req.id]"
+                                class="font-semibold text-gray-800 hover:text-indigo-600 transition-colors">
+                                {{ req?.name || 'Usuario' }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button (click)="acceptRequest(req.id)"
+                            class="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-sm hover:shadow flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                            Aceptar
+                        </button>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+
+</div>

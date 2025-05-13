@@ -21,15 +21,20 @@ export enum GameStatus {
 export class LibraryService {
   private apiUrl = `${environment.apiUrl}/api/library`;
 
-  addToLibrary(rawgId: number, status: GameStatus): Observable<any> {
+  addToLibrary(rawgId: number, status: GameStatus, notes: string | null = null, rating: number | null = null): Observable<any> {
     return from(
       axios.post(this.apiUrl, {
         rawg_id: rawgId,
         status,
-        notes: null,
-        rating: null
+        notes,
+        rating
       }).then(response => response.data)
     );
   }
   
+  getUserLibrary(): Observable<any[]> {
+    return from(
+      axios.get(this.apiUrl).then(response => response.data)
+    );
+  }
 }

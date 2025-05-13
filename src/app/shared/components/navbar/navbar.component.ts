@@ -61,6 +61,8 @@ export class NavbarComponent implements OnInit {
 
   async logout(): Promise<void> {
     await this.authService.logout();
+    // Actualizar la pagina
+    location.reload();
     // authStatus$ se actualiza automáticamente, y el suscriptor en ngOnInit limpiará username y avatarUrl
   }
 

@@ -15,7 +15,7 @@ export class AuthService {
 
   // Método específico para obtener la URL del avatar
   getAvatarUrl(avatarName: string): string {
-    return `${this._apiUrl}/storage/avatars/${avatarName}`;
+    return `${this._apiUrl}/avatars/${avatarName}`;
   } 
   private authStatusSubject = new BehaviorSubject<boolean>(false);
   authStatus$ = this.authStatusSubject.asObservable();
@@ -88,5 +88,26 @@ export class AuthService {
 
   setAuthStatus(status: boolean) {
     this.authStatusSubject.next(status);
+  }
+
+  async uploadAvatar(formData: FormData) {
+    try {
+      await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
+      const response = await axios.post(`${this._apiUrl}/api/update-avatar`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      // Actualiza el usuario local si el backend devuelve el usuario actualizado
+      if (response.data.user) {
+        this.user = response.data.user;
+        this.authStatusSubject.next(true);
+      } else {
+        await this.getUser(true);
+      }
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 }

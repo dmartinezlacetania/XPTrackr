@@ -163,4 +163,49 @@ export class ProfileEditComponent implements OnInit {
       this.editForm.markAllAsTouched();
     }
   }
+  
+  async onAvatarSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+    const file = input.files[0];
+  
+    // Validar el tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Por favor, selecciona una imagen válida.';
+      return;
+    }
+  
+    // Validar el tamaño del archivo (máximo 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      this.errorMessage = 'La imagen no debe superar los 2MB.';
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('avatar', file);
+  
+    this.loading = true;
+    this.errorMessage = '';
+  
+    try {
+      await this.authService.uploadAvatar(formData);
+      // Recarga los datos del usuario para mostrar el nuevo avatar
+      await this.loadUserData();
+    } catch (error: any) {
+      this.errorMessage = error?.response?.data?.message || 'Error al subir el avatar.';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  get avatarUrl(): string {
+    if (this.user?.avatar) {
+      return this.authService.getAvatarUrl(this.user.avatar);
+    }
+    console.log(this.user?.avatar);
+    // Puedes poner una imagen por defecto si no hay avatar
+    return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(this.user?.name || 'U');
+  }
 }

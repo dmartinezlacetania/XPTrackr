@@ -23,4 +23,10 @@ export class GamesService {
   getGameDetails(gameId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${gameId}`);
   }
+
+  // Nuevo método para obtener los juegos de la próxima semana
+  getNextWeekGames(): Observable<any> {
+    // Asume que el endpoint en el backend es /api/games/next-week
+    return this.http.get<any>(`${this.apiUrl}/next-week`);
+  }
 }

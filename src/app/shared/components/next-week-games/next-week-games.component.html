@@ -74,7 +74,7 @@
                         class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded">
                     {{ platform_item.platform.name }}
                   </span>
-                  <span *ngIf="game.platforms.length > 3" class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded">
+                  <span *ngIf="game.platforms && game.platforms.length > 3" class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded">
                     +{{ game.platforms.length - 3 }}
                   </span>
                 </div>

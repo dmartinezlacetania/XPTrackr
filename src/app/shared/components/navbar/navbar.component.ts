@@ -1,23 +1,26 @@
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
-import { AuthService } from '../../../services/auth/auth.service'; // Asegúrate de que tienes un servicio de autenticación
+import { AuthService } from '../../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GameSearchComponent } from '../game-search/game-search.component';
-
-
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterLink, RouterLinkActive, GameSearchComponent],
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterLinkActive, GameSearchComponent, FormsModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
   isAuthenticated: boolean = false;
   username: string = '';
-  avatarUrl: string | null = null; // Nueva propiedad para la URL del avatar
+  userEmail: string = '';
+  avatarUrl: string | null = null;
   isUserMenuOpen: boolean = false;
+  isSearchOpen: boolean = false;
+  searchTerm: string = ''; // Para el input de búsqueda
   private subscription!: Subscription;
 
   @ViewChild('userMenuDropdown') userMenuDropdown!: ElementRef;
@@ -31,14 +34,16 @@ export class NavbarComponent implements OnInit {
       if (status) {
         const user = await this.authService.getUser();
         this.username = user?.name || 'Usuario';
+        this.userEmail = user?.email || '';
         if (user && user.avatar) {
           this.avatarUrl = this.authService.getAvatarUrl(user.avatar);
         } else {
-          this.avatarUrl = null; // No hay avatar o no se pudo cargar
+          this.avatarUrl = null;
         }
       } else {
         this.username = '';
-        this.avatarUrl = null; // Limpiar avatarUrl al cerrar sesión
+        this.userEmail = '';
+        this.avatarUrl = null;
       }
     });
   }
@@ -46,10 +51,13 @@ export class NavbarComponent implements OnInit {
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
-  
 
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;
+    // Si abrimos el menú de usuario, cerramos la búsqueda si está abierta
+    if (this.isUserMenuOpen && this.isSearchOpen) {
+      this.isSearchOpen = false;
+    }
   }
 
   @HostListener('document:click', ['$event'])
@@ -61,25 +69,57 @@ export class NavbarComponent implements OnInit {
 
   async logout(): Promise<void> {
     await this.authService.logout();
-    // Actualizar la pagina
     location.reload();
-    
-    // authStatus$ se actualiza automáticamente, y el suscriptor en ngOnInit limpiará username y avatarUrl
   }
 
-  isSearchOpen = false;
-
-  toggleSearch() {
-    console.log('Toggle Search clicked, current state:', this.isSearchOpen);
+  toggleSearch(): void {
     this.isSearchOpen = !this.isSearchOpen;
-    console.log('New state:', this.isSearchOpen);
     // Si abrimos la búsqueda, cerramos el menú de usuario si está abierto
     if (this.isSearchOpen && this.isUserMenuOpen) {
       this.isUserMenuOpen = false;
     }
   }
 
-  closeSearch() {
+  openSearchResults(): void {
+    this.isSearchOpen = true;
+    // Si abrimos la búsqueda, cerramos el menú de usuario si está abierto
+    if (this.isUserMenuOpen) {
+      this.isUserMenuOpen = false;
+    }
+  }
+
+  closeSearch(): void {
     this.isSearchOpen = false;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    // Mantenemos el panel de búsqueda abierto pero con resultados vacíos
+  }
+
+  onSearchInput(): void {
+    // Si el usuario escribe algo, aseguramos que el panel de resultados esté abierto
+    if (!this.isSearchOpen) {
+      this.openSearchResults();
+    }
+  }
+
+  // Método para manejar atajos de teclado
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    // Atajo ⌘K o Ctrl+K para abrir la búsqueda
+    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      event.preventDefault();
+      this.openSearchResults();
+    }
+    // Escape para cerrar la búsqueda o el menú de usuario
+    if (event.key === 'Escape') {
+      if (this.isSearchOpen) {
+        this.closeSearch();
+      }
+      if (this.isUserMenuOpen) {
+        this.isUserMenuOpen = false;
+      }
+    }
   }
 }

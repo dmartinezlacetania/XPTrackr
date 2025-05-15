@@ -1,0 +1,53 @@
+/* next-week-games.component.css */
+.carousel-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .carousel-track {
+    display: flex;
+    width: 100%;
+  }
+  
+  .carousel-item {
+    flex-shrink: 0;
+    padding: 0 8px;
+    box-sizing: border-box;
+  }
+  
+  /* Animación para los indicadores */
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+  
+  button:focus {
+    outline: none;
+  }
+  
+  /* Efecto hover para las tarjetas */
+  .carousel-item > div {
+    transition: all 0.3s ease;
+  }
+  
+  .carousel-item > div:hover {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  }
+  
+  /* Animación de carga */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .carousel-item {
+    animation: fadeIn 0.5s ease-in-out;
+  }

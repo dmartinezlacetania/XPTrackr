@@ -1,5 +1,7 @@
+<!-- game-search.component.html -->
 <div class="relative">
-  <div class="flex items-center">
+  <!-- Input de búsqueda (ahora condicional) -->
+  <div *ngIf="!hideSearchInput" class="flex items-center">
     <input
       type="text"
       [(ngModel)]="searchTerm"
@@ -17,6 +19,7 @@
       </svg>
     </button>
     <button 
+      *ngIf="!hideSearchInput"
       (click)="close()"
       class="absolute right-2 text-gray-500 hover:text-gray-700"
     >
@@ -33,7 +36,8 @@
 
   <!-- Resultados de búsqueda -->
   <div *ngIf="searchResults.length > 0 || isLoading" 
-       class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg max-h-96 overflow-y-auto">
+       [ngClass]="{'absolute z-50 mt-1 w-full': !hideSearchInput}"
+       class="bg-white rounded-md shadow-lg max-h-96 overflow-y-auto">
     <div *ngIf="isLoading" class="p-4 text-center text-gray-500">
       <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -66,7 +70,8 @@
       </div>
       <ng-template #noResults>
         <div class="p-4 text-center text-gray-500">
-          No se encontraron juegos con ese nombre.
+          <p *ngIf="searchTerm">No se encontraron juegos con "{{ searchTerm }}".</p>
+          <p *ngIf="!searchTerm">Escribe para buscar juegos.</p>
         </div>
       </ng-template>
     </div>

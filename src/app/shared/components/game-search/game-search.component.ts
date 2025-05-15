@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -14,11 +14,12 @@ import { Router } from '@angular/router';
   templateUrl: './game-search.component.html',
   styleUrls: ['./game-search.component.css']
 })
-export class GameSearchComponent {
+export class GameSearchComponent implements OnChanges {
   @Input() showResults = false;
+  @Input() searchTerm = ''; // Recibimos el término de búsqueda del navbar
+  @Input() hideSearchInput = false; // Nueva propiedad para ocultar el input
   @Output() closeResults = new EventEmitter<void>();
   
-  searchTerm = '';
   searchResults: any[] = [];
   isLoading = false;
   errorMessage = '';
@@ -50,6 +51,13 @@ export class GameSearchComponent {
       this.searchResults = results;
       this.isLoading = false;
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Si cambia el término de búsqueda desde el navbar, realizamos la búsqueda
+    if (changes['searchTerm'] && this.searchTerm) {
+      this.search(this.searchTerm);
+    }
   }
 
   search(term: string): void {

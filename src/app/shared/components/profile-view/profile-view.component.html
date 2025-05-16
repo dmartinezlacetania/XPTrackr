@@ -1,33 +1,191 @@
-<div class="flex justify-center items-center h-screen bg-gray-100">
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
-      <h2 class="block text-gray-700 text-2xl font-bold mb-6 text-center">Perfil</h2>
+<div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 to-indigo-950 text-white py-10">
+  <div class="bg-gray-800 bg-opacity-70 shadow-xl rounded-lg w-full max-w-4xl overflow-hidden border border-gray-700">
+    <!-- Sección de perfil -->
+    <div class="px-8 pt-6 pb-8 border-b border-gray-700">
+      <h2 class="block text-white text-2xl font-bold mb-6 text-center">Perfil</h2>
   
-      <div *ngIf="loading" class="text-center text-gray-600">Cargando...</div>
+      <div *ngIf="loading" class="text-center text-gray-300">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+        <p class="mt-2">Cargando...</p>
+      </div>
   
-      <div *ngIf="!loading && user" class="space-y-6">
+      <div *ngIf="!loading && user" class="flex flex-col md:flex-row">
         <!-- Avatar Section -->
-        <div class="flex flex-col items-center space-y-4">
-          <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+        <div class="flex flex-col items-center space-y-4 md:w-1/3">
+          <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-600 shadow-lg hover:shadow-xl transition-shadow duration-300 group relative">
             <img [src]="avatarUrl" 
                  alt="Avatar de perfil" 
-                 class="w-full h-full object-cover">
+                 (error)="onImageError()"
+                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
           </div>
+          <h3 class="text-xl font-bold text-white">{{ user.name }}</h3>
+          <p class="text-gray-300" *ngIf="user.username">{{ user.username }}</p>
         </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
-          <p class="text-gray-800">{{ user.name }}</p>
-        </div>
-  
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Correo electrónico:</label>
-          <p class="text-gray-800">{{ user.email }}</p>
-        </div>
-  
-        <div *ngIf="user.username" class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Nombre de usuario:</label>
-          <p class="text-gray-800">{{ user.username }}</p>
+        
+        <!-- Información del usuario -->
+        <div class="md:w-2/3 mt-6 md:mt-0 md:pl-8 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
+              <label class="block text-gray-300 text-sm font-bold mb-1">Correo electrónico:</label>
+              <p class="text-white">{{ user.email }}</p>
+            </div>
+            
+            <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
+              <label class="block text-gray-300 text-sm font-bold mb-1">Miembro desde:</label>
+              <p class="text-white">{{ user.created_at | date:'mediumDate' }}</p>
+            </div>
+            
+            <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
+              <label class="block text-gray-300 text-sm font-bold mb-1">Juegos en biblioteca:</label>
+              <p class="text-white">{{ userStats?.totalGames || 0 }}</p>
+            </div>
+            
+            <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
+              <label class="block text-gray-300 text-sm font-bold mb-1">Juegos completados:</label>
+              <p class="text-white">{{ userStats?.completedGames || 0 }}</p>
+            </div>
+          </div>
+          
+          <!-- <div class="flex justify-end mt-4">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              Editar perfil
+            </button>
+          </div> -->
         </div>
       </div>
     </div>
+    
+    <!-- Sección de biblioteca de juegos -->
+    <div class="px-8 py-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-white">Mi biblioteca de juegos</h2>
+        <!-- <div class="flex space-x-2">
+          <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-lg">
+            Añadir juego
+          </button>
+        </div> -->
+      </div>
+      
+      <!-- Filtros -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button *ngFor="let filter of filterOptions"  
+        (click)="filterGames(filter.type)"
+        [class.bg-indigo-600]="selectedFilter === filter.type"
+        [class.text-white]="selectedFilter === filter.type"
+        [class.bg-gray-700]="selectedFilter !== filter.type"
+        [class.text-gray-200]="selectedFilter !== filter.type"
+        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-md">
+          {{filter.text}}
+        </button>
+      </div>
+      
+      <!-- Estadísticas rápidas -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg text-center border border-gray-600 shadow-md">
+          <div class="text-2xl font-bold text-indigo-400">{{ userStats?.totalGames || 0 }}</div>
+          <div class="text-sm text-gray-300">Total</div>
+        </div>
+        <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg text-center border border-gray-600 shadow-md">
+          <div class="text-2xl font-bold text-green-400">{{ userStats?.completedGames || 0 }}</div>
+          <div class="text-sm text-gray-300">Completados</div>
+        </div>
+        <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg text-center border border-gray-600 shadow-md">
+          <div class="text-2xl font-bold text-blue-400">{{ userStats?.inProgressGames || 0 }}</div>
+          <div class="text-sm text-gray-300">Jugando</div>
+        </div>
+        <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg text-center border border-gray-600 shadow-md">
+          <div class="text-2xl font-bold text-yellow-400">{{ userStats?.pendingGames || 0 }}</div>
+          <div class="text-sm text-gray-300">Pendientes</div>
+        </div>
+      </div>
+      
+      <!-- Lista de juegos -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let game of paginatedGames" 
+             (click)="navigateToGameDetail(game.id)"
+             class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+          <div class="relative">
+            <img [src]="game.background_image || '/assets/images/placeholder-game.jpg'" [alt]="game.name" class="w-full h-40 object-cover">
+            <div class="absolute top-2 right-2 text-white text-xs px-2 py-1 rounded"
+                 [ngClass]="{
+                   'bg-blue-600': game.status === GameStatus.PLAYING,
+                   'bg-green-600': game.status === GameStatus.COMPLETED,
+                   'bg-yellow-600': game.status === GameStatus.PLAN_TO_PLAY,
+                   'bg-red-600': game.status === GameStatus.DROPPED,
+                   'bg-gray-600': game.status === GameStatus.ON_HOLD
+                 }">
+              {{ getStatusText(game.status) }}
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start">
+              <h3 class="font-semibold text-lg mb-1 text-white truncate" [title]="game.name">{{ game.name }}</h3>
+              <div class="text-yellow-500 flex" *ngIf="game.rating">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span class="ml-1">{{ game.rating | number:'1.1-1' }}</span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+              <!-- Horas jugadas eliminadas -->
+              <div class="flex flex-wrap gap-1 justify-end">
+                <span *ngFor="let platform of game.platforms?.slice(0, 2)" class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">
+                  {{ platform?.platform?.name || 'Desconocida' }}
+                </span>
+                <span *ngIf="game.platforms && game.platforms.length > 2" class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">
+                  +{{ game.platforms.length - 2 }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Barra de progreso eliminada -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mensaje cuando no hay juegos -->
+      <div *ngIf="!loading && filteredGames.length === 0" class="text-center py-10 text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <p class="text-xl font-semibold mb-2">No hay juegos en esta categoría</p>
+        <p>Añade juegos a tu biblioteca para empezar a hacer seguimiento de tu progreso.</p>
+      </div>
+      
+      <!-- Paginación -->
+      <div class="flex justify-center mt-8" *ngIf="totalPages > 1">
+        <nav class="flex items-center space-x-2">
+          <button (click)="previousPage()" 
+                  [disabled]="currentPage === 1"
+                  class="px-3 py-1 rounded-md bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <button *ngFor="let pageNum of getPagesArray()" 
+                  (click)="goToPage(pageNum)"
+                  [class.bg-indigo-600]="currentPage === pageNum"
+                  [class.text-white]="currentPage === pageNum"
+                  [class.bg-gray-700]="currentPage !== pageNum"
+                  [class.text-gray-300]="currentPage !== pageNum"
+                  class="px-3 py-1 rounded-md hover:bg-gray-600 transition-colors">
+            {{ pageNum }}
+          </button>
+          
+          <button (click)="nextPage()" 
+                  [disabled]="currentPage === totalPages"
+                  class="px-3 py-1 rounded-md bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
 </div>
-  

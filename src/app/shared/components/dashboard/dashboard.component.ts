@@ -34,15 +34,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           const user = await this.authService.getUser();
           if (user) {
             this.user = user;
-          } else {
-            this.router.navigate(['/login']);
           }
         } catch {
-          this.router.navigate(['/login']);
+          this.user = null;
         }
       } else {
         this.user = null;
-        this.router.navigate(['/login']);
       }
 
       this.loading = false;

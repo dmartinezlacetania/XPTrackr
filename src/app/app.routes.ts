@@ -38,6 +38,10 @@ export const routes: Routes = [
         component: ProfileEditComponent,
         canActivate: [authGuard]
     },
+    { 
+        path: 'profile/:userId', // Esta ruta coincide con profile/2
+        component: ProfileViewComponent // No tiene canActivate: [authGuard] explícitamente aquí
+    },
     {
         path: 'games/:id',
         component: GameDetailComponent,

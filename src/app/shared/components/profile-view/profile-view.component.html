@@ -2,14 +2,26 @@
   <div class="bg-gray-800 bg-opacity-70 shadow-xl rounded-lg w-full max-w-4xl overflow-hidden border border-gray-700">
     <!-- Sección de perfil -->
     <div class="px-8 pt-6 pb-8 border-b border-gray-700">
-      <h2 class="block text-white text-2xl font-bold mb-6 text-center">Perfil</h2>
+      <h2 class="block text-white text-2xl font-bold mb-6 text-center">
+        {{ isViewingOwnProfile ? 'Mi Perfil' : (user && user.name ? 'Perfil de ' + user.name : 'Perfil de Usuario') }}
+      </h2>
   
       <div *ngIf="loading" class="text-center text-gray-300">
         <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
         <p class="mt-2">Cargando...</p>
       </div>
+      
+      <!-- Mensaje de error -->
+      <div *ngIf="errorMessage" class="bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg shadow-md mb-6">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-red-300">{{ errorMessage }}</span>
+        </div>
+      </div>
   
-      <div *ngIf="!loading && user" class="flex flex-col md:flex-row">
+      <div *ngIf="!loading && user && !errorMessage" class="flex flex-col md:flex-row">
         <!-- Avatar Section -->
         <div class="flex flex-col items-center space-y-4 md:w-1/3">
           <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-600 shadow-lg hover:shadow-xl transition-shadow duration-300 group relative">
@@ -27,7 +39,9 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
               <label class="block text-gray-300 text-sm font-bold mb-1">Correo electrónico:</label>
-              <p class="text-white">{{ user.email }}</p>
+              <!-- Mostrar email solo si es el perfil propio -->
+              <p class="text-white" *ngIf="isViewingOwnProfile && user.email">{{ user.email }}</p>
+              <p class="text-gray-400" *ngIf="!isViewingOwnProfile">No disponible</p>
             </div>
             
             <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
@@ -46,14 +60,15 @@
             </div>
           </div>
           
-          <!-- <div class="flex justify-end mt-4">
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center shadow-lg">
+          <!-- Botón de Editar Perfil (solo visible en perfil propio) -->
+          <div *ngIf="isViewingOwnProfile" class="flex justify-end mt-4">
+            <button routerLink="/profile/edit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center shadow-lg">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               Editar perfil
             </button>
-          </div> -->
+          </div>
         </div>
       </div>
     </div>
@@ -61,12 +76,15 @@
     <!-- Sección de biblioteca de juegos -->
     <div class="px-8 py-6">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-white">Mi biblioteca de juegos</h2>
-        <!-- <div class="flex space-x-2">
-          <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-lg">
+        <h2 class="text-xl font-bold text-white">
+          {{ isViewingOwnProfile ? 'Mi biblioteca de juegos' : 'Biblioteca de ' + (user?.name || 'Usuario') }}
+        </h2>
+        <!-- Botón de añadir juego (solo visible en perfil propio) -->
+        <div class="flex space-x-2" *ngIf="isViewingOwnProfile">
+          <button routerLink="/games/search" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-lg">
             Añadir juego
           </button>
-        </div> -->
+        </div>
       </div>
       
       <!-- Filtros -->
@@ -131,7 +149,6 @@
               </div>
             </div>
             <div class="flex justify-between items-center mt-2">
-              <!-- Horas jugadas eliminadas -->
               <div class="flex flex-wrap gap-1 justify-end">
                 <span *ngFor="let platform of game.platforms?.slice(0, 2)" class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">
                   {{ platform?.platform?.name || 'Desconocida' }}
@@ -141,8 +158,6 @@
                 </span>
               </div>
             </div>
-            
-            <!-- Barra de progreso eliminada -->
           </div>
         </div>
       </div>
@@ -153,7 +168,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
         <p class="text-xl font-semibold mb-2">No hay juegos en esta categoría</p>
-        <p>Añade juegos a tu biblioteca para empezar a hacer seguimiento de tu progreso.</p>
+        <p *ngIf="isViewingOwnProfile">Añade juegos a tu biblioteca para empezar a hacer seguimiento de tu progreso.</p>
+        <p *ngIf="!isViewingOwnProfile">Este usuario no tiene juegos en esta categoría.</p>
       </div>
       
       <!-- Paginación -->

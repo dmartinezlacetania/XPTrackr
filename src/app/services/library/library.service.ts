@@ -38,6 +38,12 @@ export class LibraryService {
     );
   }
 
+  getUserLibraryByUserId(userId: number): Observable<any[]> { // Parámetro renombrado y tipo de retorno ajustado
+    return from(
+      axios.get<any[]>(`${this.apiUrl}/${userId}`).then(response => response.data) // Usar userId y esperar any[]
+    );
+  }
+
   deleteFromLibrary(entryId: number): Observable<any> {
     return from(
       axios.delete(`${this.apiUrl}/${entryId}`).then(response => response.data)

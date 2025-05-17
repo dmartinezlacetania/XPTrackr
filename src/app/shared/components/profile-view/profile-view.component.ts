@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth/auth.service';
-import { Router } from '@angular/router'; // Asegúrate de que Router está importado
-import { Subscription, forkJoin, of } from 'rxjs'; // Importar forkJoin y of
-import { map, switchMap, catchError } from 'rxjs/operators'; // Importar operadores de RxJS
+import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { LibraryService, GameStatus } from '../../../services/library/library.service';
-import { GamesService } from '../../../services/games/games.service'; // Importar GamesService
+import { GamesService } from '../../../services/games/games.service';
+import { FriendsService } from '../../../services/friends/friends.service';
 
 interface UserStats {
   totalGames: number;
@@ -15,30 +16,25 @@ interface UserStats {
   abandonedGames: number;
 }
 
-// Interfaz para la entrada de la biblioteca tal como la devuelve LibraryService
 interface LibraryEntry {
   rawg_id: number;
   status: GameStatus;
   rating: number | null;
   notes: string | null;
-  // Asegúrate de que esta interfaz coincida con lo que devuelve tu backend para /api/library
 }
 
-// Interfaz Game actualizada para incluir 'notes' y reflejar datos combinados
 interface Game {
-  id: number; // rawg_id
+  id: number;
   name: string;
   background_image?: string;
-  rating: number | null; // Este será el rating personal del usuario para el juego en su biblioteca
-  playtime?: number; // Podría ser el playtime promedio de RAWG
+  rating: number | null;
+  playtime?: number;
   platforms?: Array<{ platform: { name: string } }>;
   status: GameStatus;
-  notes?: string | null; // Notas del usuario para este juego en su biblioteca
-  // Puedes añadir más campos de los detalles del juego si los necesitas
-  rawg_rating?: number; // Rating general del juego en RAWG, si quieres mostrar ambos
+  notes?: string | null;
+  rawg_rating?: number;
 }
 
-// Interfaz para las opciones de filtro para mayor claridad y seguridad de tipo
 interface FilterOption {
   type: GameStatus | 'all';
   text: string;
@@ -46,18 +42,20 @@ interface FilterOption {
 
 @Component({
   selector: 'app-profile-view',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './profile-view.component.html',
-  styleUrl: './profile-view.component.css'
+  styleUrls: ['./profile-view.component.css']
 })
 export class ProfileViewComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
   
-  public GameStatus = GameStatus; // Ya lo tenías, es correcto
+  public GameStatus = GameStatus;
 
   user: any = null;
   loading: boolean = true;
-  avatarUrl: string = '/images/default-avatar.png';
+  avatarUrl: string = '/assets/images/default-avatar.png';
+  private routeSubscription!: Subscription;
   private authSubscription!: Subscription;
   errorMessage: string = '';
   userStats: UserStats | null = null;
@@ -65,10 +63,9 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   filteredGames: Game[] = [];
   selectedFilter: GameStatus | 'all' = 'all';
 
-  // Propiedades para la paginación
   paginatedGames: Game[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 6; // Coincide con el *ngIf="filteredGames.length > 6" (implica 6 por página)
+  itemsPerPage: number = 6;
   totalPages: number = 0;
 
   public filterOptions: FilterOption[] = [
@@ -77,123 +74,214 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     {type: GameStatus.PLAYING, text: 'Jugando'},
     {type: GameStatus.PLAN_TO_PLAY, text: 'Pendientes'},
     {type: GameStatus.DROPPED, text: 'Abandonados'}
-    // Si GameStatus.ON_HOLD también debe ser un filtro, añádelo aquí:
-    // {type: GameStatus.ON_HOLD, text: 'En Pausa'}
   ];
+
+  isViewingOwnProfile: boolean = true;
+  private userIdFromRoute: string | null = null;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private libraryService: LibraryService,
-    private gamesService: GamesService
+    private gamesService: GamesService,
+    private friendsService: FriendsService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.authSubscription = this.authService.authStatus$.subscribe(async isAuth => {
-      this.loading = true;
+    this.loading = true;
 
-      if (isAuth) {
-        try {
-          const user = await this.authService.getUser();
-          if (user) {
-            this.user = user;
-            if (this.user.avatar) {
-              this.avatarUrl = this.authService.getAvatarUrl(this.user.avatar);
-            }
-            this.loadUserLibrary(); 
-            
-          } else {
-            this.router.navigate(['/login']);
-          }
-        } catch {
+    // Obtener el userId de la ruta
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      this.userIdFromRoute = params.get('userId');
+      console.log('ID de usuario en la ruta:', this.userIdFromRoute);
+      
+      // Verificar autenticación
+      this.authService.isAuthenticated().then(isAuth => {
+        console.log('Estado de autenticación:', isAuth);
+        
+        if (!isAuth) {
+          console.log('No autenticado, redirigiendo a login');
           this.router.navigate(['/login']);
+          this.loading = false;
+          return;
         }
-      } else {
-        this.router.navigate(['/login']);
-      }
-      // this.loading = false; // Se maneja en loadUserLibrary
+        
+        // Si estamos autenticados, obtener el usuario actual
+        this.authService.getUser()
+          .then(loggedInUser => {
+            console.log('Usuario logueado obtenido:', loggedInUser);
+            
+            if (!loggedInUser) {
+              console.error('Usuario autenticado pero no se pudo obtener la información');
+              this.errorMessage = 'Error al cargar la información del usuario';
+              this.loading = false;
+              return;
+            }
+            
+            // Procesar según si estamos viendo nuestro perfil u otro
+            if (this.userIdFromRoute) {
+              console.log('Comparando IDs:', loggedInUser.id.toString(), this.userIdFromRoute);
+              
+              if (loggedInUser.id.toString() === this.userIdFromRoute) {
+                // Es nuestro propio perfil
+                console.log('Viendo perfil propio');
+                this.isViewingOwnProfile = true;
+                this.user = loggedInUser;
+                this.updateAvatarUrl();
+                this.loadUserLibrary();
+              } else {
+                // Es el perfil de otro usuario - Usar FriendsService.getUserById
+                console.log('Viendo perfil de otro usuario, cargando datos...');
+                this.isViewingOwnProfile = false;
+                
+                const userId = parseInt(this.userIdFromRoute, 10);
+                if (isNaN(userId)) {
+                  this.errorMessage = 'ID de usuario inválido';
+                  this.loading = false;
+                  return;
+                }
+                
+                this.friendsService.getUserById(userId).subscribe({
+                  next: (userData) => {
+                    console.log('Datos de usuario obtenidos:', userData);
+                    this.user = userData;
+                    this.updateAvatarUrl();
+                    this.loadUserLibrary(this.userIdFromRoute || undefined);
+                  },
+                  error: (error) => {
+                    console.error('Error al cargar el perfil del usuario:', error);
+                    this.errorMessage = 'No se pudo cargar el perfil del usuario';
+                    this.loading = false;
+                  }
+                });
+              }
+            } else {
+              // Sin userId en la ruta, mostramos nuestro propio perfil
+              console.log('Sin userId en la ruta, mostrando perfil propio');
+              this.isViewingOwnProfile = true;
+              this.user = loggedInUser;
+              this.updateAvatarUrl();
+              this.loadUserLibrary();
+            }
+          })
+          .catch(error => {
+            console.error('Error al obtener el usuario:', error);
+            this.errorMessage = 'Error al cargar el perfil';
+            this.loading = false;
+          });
+      });
     });
+  }
+  
+  updateAvatarUrl(): void {
+    if (this.user && this.user.avatar) {
+      this.avatarUrl = this.authService.getAvatarUrl(this.user.avatar);
+    } else {
+      this.avatarUrl = '/assets/images/default-avatar.png';
+    }
   }
 
   ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
     this.authSubscription?.unsubscribe();
   }
 
-  loadUserStats(): void {
-    this.userStats = {
-      totalGames: this.userGames.length, // Usar userGames que ahora tiene los datos completos
-      completedGames: this.userGames.filter(g => g.status === GameStatus.COMPLETED).length,
-      inProgressGames: this.userGames.filter(g => g.status === GameStatus.PLAYING).length,
-      pendingGames: this.userGames.filter(g => g.status === GameStatus.PLAN_TO_PLAY).length,
-      abandonedGames: this.userGames.filter(g => g.status === GameStatus.DROPPED).length
-    };
-  }
-
   onImageError() {
-    this.avatarUrl = '/images/default-avatar.png';
+    this.avatarUrl = '/assets/images/default-avatar.png';
   }
 
-  loadUserLibrary(): void {
-    this.loading = true;
-    this.libraryService.getUserLibrary().pipe(
-      switchMap((libraryEntries: LibraryEntry[]) => {
+  loadUserLibrary(userIdToLoad?: string): void {
+    console.log('Cargando biblioteca para usuario:', userIdToLoad || 'usuario actual');
+    this.loading = true; 
+    this.errorMessage = '';
+
+    let libraryObservable;
+
+    if (userIdToLoad) {
+      const numericUserId = parseInt(userIdToLoad, 10);
+      if (isNaN(numericUserId)) {
+        console.error('ID de usuario inválido:', userIdToLoad);
+        this.errorMessage = 'ID de usuario inválido.';
+        this.userGames = [];
+        this.filterGames(this.selectedFilter); 
+        this.loading = false;
+        return;
+      }
+      libraryObservable = this.libraryService.getUserLibraryByUserId(numericUserId);
+    } else {
+      libraryObservable = this.libraryService.getUserLibrary();
+    }
+
+    libraryObservable.pipe(
+      switchMap(libraryEntries => {
+        console.log('Entradas de biblioteca obtenidas:', libraryEntries);
+        
         if (!libraryEntries || libraryEntries.length === 0) {
-          return of([]); // Devuelve un observable de un array vacío si no hay juegos
+          console.log('No hay juegos en la biblioteca');
+          return of([]);
         }
-        // Crear un array de observables, cada uno obteniendo detalles de un juego
-        const gameDetailObservables = libraryEntries.map(entry =>
+        
+        // Obtener detalles de cada juego usando GamesService.getGameDetails
+        const gameDetailsObservables = libraryEntries.map(entry => 
           this.gamesService.getGameDetails(entry.rawg_id).pipe(
             map(gameDetails => ({
-              // Combinar detalles del juego con la información de la biblioteca
               id: entry.rawg_id,
               name: gameDetails.name,
               background_image: gameDetails.background_image,
-              rating: entry.rating, // Rating personal del usuario
-              playtime: gameDetails.playtime, // Playtime promedio de RAWG
+              rating: entry.rating, // Rating del usuario para este juego
+              playtime: gameDetails.playtime,
               platforms: gameDetails.platforms,
               status: entry.status,
               notes: entry.notes,
-              rawg_rating: gameDetails.rating // Rating general de RAWG
+              rawg_rating: gameDetails.rating // Rating general del juego
             })),
             catchError(error => {
-              console.error(`Error fetching details for game ${entry.rawg_id}:`, error);
-              // Devolver un objeto parcial o nulo para que forkJoin no falle completamente
-              // O podrías filtrar estos errores más tarde
-              return of(null); 
+              console.error(`Error al obtener detalles del juego ${entry.rawg_id}:`, error);
+              // Devolver un objeto con datos mínimos en caso de error
+              return of({
+                id: entry.rawg_id,
+                name: `Juego ${entry.rawg_id}`,
+                background_image: '/assets/images/placeholder-game.jpg',
+                rating: entry.rating,
+                status: entry.status,
+                notes: entry.notes
+              });
             })
           )
         );
-        return forkJoin(gameDetailObservables);
-      }),
-      map(detailedGames => detailedGames.filter(game => game !== null) as Game[]) // Filtrar los que fallaron
+        
+        return gameDetailsObservables.length > 0 
+          ? forkJoin(gameDetailsObservables) 
+          : of([]);
+      })
     ).subscribe({
       next: (enrichedGames: Game[]) => {
-        console.log('Enriched library loaded:', enrichedGames);
+        console.log('Juegos con detalles cargados:', enrichedGames);
         this.userGames = enrichedGames;
-        // Aplicar filtro inicial (o 'all') y luego paginar
-        this.filterGames(this.selectedFilter); 
-        // this.calculateStats(); // calculateStats es llamado por filterGames
-        // this.updatePagination(); // updatePagination es llamado por filterGames
+        this.filterGames(this.selectedFilter);
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading user library:', error);
+        console.error('Error al cargar la biblioteca:', error);
+        this.errorMessage = 'No se pudo cargar la biblioteca de juegos.';
         this.userGames = [];
         this.filteredGames = [];
-        this.calculateStats(); // Recalcular con biblioteca vacía
-        this.loading = false; // Finalizar carga incluso con error
+        this.filterGames(this.selectedFilter);
+        this.loading = false;
       }
     });
   }
 
   filterGames(status: GameStatus | 'all'): void {
+    console.log('Filtrando juegos por estado:', status);
     this.selectedFilter = status;
     this.filteredGames = status === 'all' 
       ? [...this.userGames] 
       : this.userGames.filter(game => game.status === status);
     this.calculateStats();
-    this.currentPage = 1; // Resetear a la primera página con cada filtro
-    this.updatePagination(); // Actualizar paginación después de filtrar
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   calculateStats(): void {
@@ -206,6 +294,8 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       pendingGames: gamesForStats.filter(g => g.status === GameStatus.PLAN_TO_PLAY).length,
       abandonedGames: gamesForStats.filter(g => g.status === GameStatus.DROPPED).length
     };
+    
+    console.log('Estadísticas calculadas:', this.userStats);
   }
 
   updatePagination(): void {
@@ -218,6 +308,13 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     this.paginatedGames = this.filteredGames.slice(startIndex, endIndex);
+    
+    console.log('Paginación actualizada:', {
+      currentPage: this.currentPage,
+      totalPages: this.totalPages,
+      itemsPerPage: this.itemsPerPage,
+      totalItems: this.filteredGames.length
+    });
   }
 
   goToPage(pageNumber: number): void {
@@ -241,7 +338,6 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Helper para generar un array de números de página para el HTML
   getPagesArray(): number[] {
     return Array(this.totalPages).fill(0).map((x, i) => i + 1);
   }
@@ -257,10 +353,10 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     return statusMap[status] || 'Desconocido';
   }
 
-  // Nuevo método para navegar al detalle del juego
   navigateToGameDetail(gameId: number): void {
     if (gameId) {
-      this.router.navigate(['/games', gameId]); // Asume que tu ruta es /games/:id
+      console.log('Navegando a detalles del juego:', gameId);
+      this.router.navigate(['/games', gameId]);
     } else {
       console.error('No se puede navegar: gameId no está definido.');
     }

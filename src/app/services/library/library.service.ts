@@ -37,4 +37,10 @@ export class LibraryService {
       axios.get(this.apiUrl).then(response => response.data)
     );
   }
+
+  deleteFromLibrary(entryId: number): Observable<any> {
+    return from(
+      axios.delete(`${this.apiUrl}/${entryId}`).then(response => response.data)
+    );
+  }
 }

@@ -16,10 +16,10 @@ interface Game {
   selector: 'app-next-week-games',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './next-week-games.component.html',
-  styleUrls: ['./next-week-games.component.css']
+  templateUrl: './next-games.component.html',
+  styleUrls: ['./next-games.component.css']
 })
-export class NextWeekGamesComponent implements OnInit {
+export class NextGamesComponent implements OnInit {
   games: Game[] = [];
   isLoading: boolean = true;
   errorMessage: string | null = null;

@@ -16,13 +16,6 @@ interface UserStats {
   abandonedGames: number;
 }
 
-// interface LibraryEntry {
-//   rawg_id: number;
-//   status: GameStatus;
-//   rating: number | null;
-//   notes: string | null;
-// }
-
 interface Game {
   id: number;
   name: string;

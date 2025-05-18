@@ -3,13 +3,13 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { NextWeekGamesComponent } from '../next-week-games/next-week-games.component';
+import { NextGamesComponent } from '../next-games/next-games.component';
 
 
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, NextWeekGamesComponent],
+  imports: [CommonModule, NextGamesComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

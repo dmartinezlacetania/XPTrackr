@@ -16,12 +16,12 @@ interface UserStats {
   abandonedGames: number;
 }
 
-interface LibraryEntry {
-  rawg_id: number;
-  status: GameStatus;
-  rating: number | null;
-  notes: string | null;
-}
+// interface LibraryEntry {
+//   rawg_id: number;
+//   status: GameStatus;
+//   rating: number | null;
+//   notes: string | null;
+// }
 
 interface Game {
   id: number;
@@ -48,13 +48,11 @@ interface FilterOption {
   styleUrls: ['./profile-view.component.css']
 })
 export class ProfileViewComponent implements OnInit, OnDestroy {
-  @ViewChild('fileInput') fileInput!: ElementRef;
   
   public GameStatus = GameStatus;
-
   user: any = null;
   loading: boolean = true;
-  avatarUrl: string = '/assets/images/default-avatar.png';
+  avatarUrl: string = '';
   private routeSubscription!: Subscription;
   private authSubscription!: Subscription;
   errorMessage: string = '';
@@ -178,7 +176,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     if (this.user && this.user.avatar) {
       this.avatarUrl = this.authService.getAvatarUrl(this.user.avatar);
     } else {
-      this.avatarUrl = '/assets/images/default-avatar.png';
+      this.avatarUrl = '';
     }
   }
 
@@ -187,9 +185,6 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     this.authSubscription?.unsubscribe();
   }
 
-  onImageError() {
-    this.avatarUrl = '/assets/images/default-avatar.png';
-  }
 
   loadUserLibrary(userIdToLoad?: string): void {
     console.log('Cargando biblioteca para usuario:', userIdToLoad || 'usuario actual');

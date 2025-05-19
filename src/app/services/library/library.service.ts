@@ -45,8 +45,28 @@ export class LibraryService {
   }
 
   deleteFromLibrary(entryId: number): Observable<any> {
+    console.log(`Eliminando juego con ID: ${entryId}`);
     return from(
-      axios.delete(`${this.apiUrl}/${entryId}`).then(response => response.data)
+      axios.delete(`${this.apiUrl}/${entryId}`)
+        .then(response => {
+          console.log('Respuesta del servidor:', response.data);
+          return response.data;
+        })
+        .catch(error => {
+          console.error('Error en la petición DELETE:', error);
+          throw error;
+        })
+    );
+  }
+  
+  // Nuevo método para actualizar una entrada existente
+  updateLibraryEntry(entryId: number, status: GameStatus, notes: string | null = null, rating: number | null = null): Observable<any> {
+    return from(
+      axios.put(`${this.apiUrl}/${entryId}`, {
+        status,
+        notes,
+        rating
+      }).then(response => response.data)
     );
   }
 }

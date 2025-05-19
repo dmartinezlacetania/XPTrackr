@@ -103,23 +103,4 @@ export class NavbarComponent implements OnInit {
       this.openSearchResults();
     }
   }
-
-  // Método para manejar atajos de teclado
-  @HostListener('window:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent): void {
-    // Atajo ⌘K o Ctrl+K para abrir la búsqueda
-    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-      event.preventDefault();
-      this.openSearchResults();
-    }
-    // Escape para cerrar la búsqueda o el menú de usuario
-    if (event.key === 'Escape') {
-      if (this.isSearchOpen) {
-        this.closeSearch();
-      }
-      if (this.isUserMenuOpen) {
-        this.isUserMenuOpen = false;
-      }
-    }
-  }
 }

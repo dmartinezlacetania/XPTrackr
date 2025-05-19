@@ -10,7 +10,7 @@ axios.defaults.withXSRFToken = true;
   providedIn: 'root'
 })
 export class FriendsService {
-  private apiUrl = environment.apiUrl + '/api';
+  private apiUrl = environment.apiUrl;
 
   getFriends(): Observable<any> {
     return from(axios.get(`${this.apiUrl}/friends`).then(res => res.data));

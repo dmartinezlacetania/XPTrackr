@@ -19,7 +19,7 @@ export enum GameStatus {
 })
 
 export class LibraryService {
-  private apiUrl = `${environment.apiUrl}/api/library`;
+  private apiUrl = `${environment.apiUrl}/library`;
 
   addToLibrary(rawgId: number, status: GameStatus, notes: string | null = null, rating: number | null = null): Observable<any> {
     return from(

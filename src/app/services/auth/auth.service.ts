@@ -15,7 +15,9 @@ export class AuthService {
 
   // Método específico para obtener la URL del avatar
   getAvatarUrl(avatarName: string): string {
-    return `${this._apiUrl}/avatars/${avatarName}`;
+    // Obtener la URL base sin /api
+    const baseUrl = this._apiUrl.replace('/api', '');
+    return `${baseUrl}/avatars/${avatarName}`;
   } 
   private authStatusSubject = new BehaviorSubject<boolean>(false);
   authStatus$ = this.authStatusSubject.asObservable();
@@ -51,7 +53,7 @@ export class AuthService {
     }
 
     try {
-      const response = await axios.get(`${this._apiUrl}/api/user`);
+      const response = await axios.get(`${this._apiUrl}/user`);
       this.user = response.data;
       console.log(this.user);
       this.authStatusSubject.next(true);
@@ -66,7 +68,7 @@ export class AuthService {
   async updateProfile(data: any) { 
     try { 
       await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`); 
-      const response = await axios.post(`${this._apiUrl}/api/update-profile`, data); 
+      const response = await axios.post(`${this._apiUrl}/update-profile`, data); 
       
       if (response.data.user) { 
         this.user = response.data.user; 
@@ -93,7 +95,7 @@ export class AuthService {
   async uploadAvatar(formData: FormData) {
     try {
       await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
-      const response = await axios.post(`${this._apiUrl}/api/update-avatar`, formData, {
+      const response = await axios.post(`${this._apiUrl}/update-avatar`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

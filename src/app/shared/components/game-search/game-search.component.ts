@@ -26,7 +26,7 @@ export class GameSearchComponent implements OnChanges {
   private searchTerms = new Subject<string>();
   
   // URL de la API desde el entorno
-  private apiUrl = `${environment.apiUrl}/api/games`;
+  private apiUrl = `${environment.apiUrl}/games`;
 
   constructor(private http: HttpClient, private router: Router) {
     this.searchTerms.pipe(

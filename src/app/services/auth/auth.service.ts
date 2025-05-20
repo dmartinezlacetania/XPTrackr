@@ -53,6 +53,7 @@ export class AuthService {
     }
 
     try {
+      await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
       const response = await axios.get(`${this._apiUrl}/user`);
       this.user = response.data;
       console.log(this.user);

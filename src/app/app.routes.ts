@@ -26,7 +26,6 @@ export const routes: Routes = [
     {
         path: 'dashboard',
         component: DashboardComponent,
-        // canActivate: [authGuard]
     },
     {
         path: 'profile',
@@ -39,8 +38,8 @@ export const routes: Routes = [
         canActivate: [authGuard]
     },
     { 
-        path: 'profile/:userId', // Esta ruta coincide con profile/2
-        component: ProfileViewComponent // No tiene canActivate: [authGuard] explícitamente aquí
+        path: 'profile/:userId',
+        component: ProfileViewComponent
     },
     {
         path: 'games/:id',

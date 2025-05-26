@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { NavbarComponent } from "./shared/components/navbar/navbar.component";
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { CookieConsentComponent } from './shared/components/cookie-consent/cookie-consent.component';
+import { AuthService } from './services/auth/auth.service';
 
 
 @Component({
@@ -13,4 +14,10 @@ import { CookieConsentComponent } from './shared/components/cookie-consent/cooki
 })
 export class AppComponent {
   title = 'XPTrackr';
+
+  constructor(private authService: AuthService) {}
+
+ngOnInit() {
+  this.authService.getUser(); // Esto restaura la sesión si la cookie sigue válida
+}
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from '../../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GameSearchComponent } from '../game-search/game-search.component';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, GameSearchComponent, FormsModule],
+  imports: [CommonModule, RouterLink, GameSearchComponent, FormsModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })

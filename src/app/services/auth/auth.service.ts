@@ -3,43 +3,51 @@ import axios from 'axios';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+// Configurem axios per gestionar les cookies i tokens CSRF
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
 
+// Definim el servei com injectable a nivell d'aplicació
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
+  // URL base de l'API
   private readonly _apiUrl = environment.apiUrl;
 
-  // Método específico para obtener la URL del avatar
+  // Mètode per obtenir la URL de l'avatar
   getAvatarUrl(avatarName: string): string {
-    // Obtener la URL base sin /api
+    // Obtenim la URL base sense /api
     const baseUrl = this._apiUrl.replace('/api', '');
     return `${baseUrl}/avatars/${avatarName}`;
   } 
+
+  // Observable per gestionar l'estat d'autenticació
   private authStatusSubject = new BehaviorSubject<boolean>(false);
   authStatus$ = this.authStatusSubject.asObservable();
 
+  // Emmagatzematge de l'usuari actual
   private user: any = null;
 
+  // Mètode per registrar un nou usuari
   async register(data: any) {
     await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
     const response = await axios.post(`${this._apiUrl}/register`, data);
     this.authStatusSubject.next(true);
-    this.user = response.data.user; // Si el backend lo devuelve
+    this.user = response.data.user;
     return response;
   }
 
+  // Mètode per iniciar sessió
   async login(data: any) {
     await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
     const response = await axios.post(`${this._apiUrl}/login`, data);
     this.authStatusSubject.next(true);
-    this.user = await this.getUser(); // Carga el usuario tras login
+    this.user = await this.getUser();
     return response;
   }
 
+  // Mètode per tancar sessió
   async logout() {
     const response = await axios.post(`${this._apiUrl}/logout`);
     this.authStatusSubject.next(false);
@@ -47,7 +55,9 @@ export class AuthService {
     return response;
   }
 
+  // Mètode per obtenir les dades de l'usuari actual
   async getUser(forceReload = false) {
+    // Si ja tenim l'usuari i no es força la recàrrega, el retornem
     if (this.user && !forceReload) {
       return this.user;
     }
@@ -60,17 +70,20 @@ export class AuthService {
       this.authStatusSubject.next(true);
       return this.user;
     } catch (error) {
+      // En cas d'error, netegem les dades de l'usuari
       this.user = null;
       this.authStatusSubject.next(false);
-      return null; // Devuelve null en caso de error (ej. no autenticado)
+      return null;
     }
   }
 
+  // Mètode per actualitzar el perfil de l'usuari
   async updateProfile(data: any) { 
     try { 
       await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`); 
       const response = await axios.post(`${this._apiUrl}/update-profile`, data); 
       
+      // Actualitzem les dades de l'usuari si el servidor les retorna
       if (response.data.user) { 
         this.user = response.data.user; 
         this.authStatusSubject.next(true);
@@ -84,15 +97,18 @@ export class AuthService {
     } 
   }
 
+  // Mètode per verificar si l'usuari està autenticat
   async isAuthenticated(): Promise<boolean> {
     const user = await this.getUser();
     return user !== null;
   }
 
+  // Mètode per actualitzar l'estat d'autenticació
   setAuthStatus(status: boolean) {
     this.authStatusSubject.next(status);
   }
 
+  // Mètode per pujar un nou avatar
   async uploadAvatar(formData: FormData) {
     try {
       await axios.get(`${this._apiUrl}/sanctum/csrf-cookie`);
@@ -101,7 +117,8 @@ export class AuthService {
           'Content-Type': 'multipart/form-data'
         }
       });
-      // Actualiza el usuario local si el backend devuelve el usuario actualizado
+      
+      // Actualitzem les dades de l'usuari si el servidor les retorna
       if (response.data.user) {
         this.user = response.data.user;
         this.authStatusSubject.next(true);
@@ -113,5 +130,4 @@ export class AuthService {
       throw error;
     }
   }
-  
 }

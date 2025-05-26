@@ -11,7 +11,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './profile-edit.component.css'
 })
 export class ProfileEditComponent implements OnInit {
-  editForm: FormGroup;
+  profileForm: FormGroup;
+  passwordForm: FormGroup;
   loading = false;
   errorMessage = '';
   user: any = null;
@@ -30,16 +31,21 @@ export class ProfileEditComponent implements OnInit {
     private authService: AuthService,
     private router: Router
   ) {
-    this.editForm = this.fb.group({
+    // Formulario para datos básicos del perfil
+    this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]]
+    });
+    
+    // Formulario para cambio de contraseña
+    this.passwordForm = this.fb.group({
       current_password: ['', Validators.required],
       new_password: ['', [this.passwordStrengthValidator]],
       new_password_confirmation: ['']
     }, { validators: this.passwordMatchValidator });
     
     // Suscribirse a cambios en el campo de contraseña para actualizar los indicadores de requisitos
-    this.editForm.get('new_password')?.valueChanges.subscribe(value => {
+    this.passwordForm.get('new_password')?.valueChanges.subscribe(value => {
       this.updatePasswordRequirements(value);
     });
   }
@@ -53,7 +59,7 @@ export class ProfileEditComponent implements OnInit {
       const user = await this.authService.getUser();
       if (user) {
         this.user = user;
-        this.editForm.patchValue({
+        this.profileForm.patchValue({
           name: user.name,
           email: user.email
         });
@@ -123,44 +129,57 @@ export class ProfileEditComponent implements OnInit {
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  async onSubmit() {
-    if (this.editForm.valid) {
+  async onSubmitProfile() {
+    if (this.profileForm.valid) {
       this.loading = true;
       this.errorMessage = '';
 
-      const payload = { ...this.editForm.value }; // Crear una copia de los valores del formulario
-
-      // Si new_password no se proporciona (está vacío),
-      // eliminamos los campos de contraseña nueva del payload
-      // para que el backend no intente actualizar la contraseña.
-      if (!payload.new_password) {
-        delete payload.new_password;
-        delete payload.new_password_confirmation;
-      }
-      // Si new_password se proporciona, new_password_confirmation también se envía
-      // y ya ha sido validado por passwordMatchValidator para asegurar que coinciden.
-
       try {
-        // Enviar el payload modificado al servicio
-        await this.authService.updateProfile(payload);
+        // Enviar solo los datos del perfil
+        await this.authService.updateProfile(this.profileForm.value);
         
         // Verificar explícitamente que seguimos autenticados
         const isAuth = await this.authService.isAuthenticated();
         if (!isAuth) {
-          // Si perdimos la autenticación, intentar recuperarla
           await this.authService.getUser(true);
           this.authService.setAuthStatus(true);
         }
         
-        this.router.navigate(['/profile']); // Navegar después de una actualización exitosa
+        // this.router.navigate(['/profile']);
       } catch (error: any) {
         this.errorMessage = error?.response?.data?.message || 'Error al actualizar el perfil.';
       } finally {
-        this.loading = false; // Asegurarse de que loading se establece en false
+        this.loading = false;
       }
     } else {
-      // Si el formulario no es válido, marcar todos los campos como tocados para mostrar errores.
-      this.editForm.markAllAsTouched();
+      this.profileForm.markAllAsTouched();
+    }
+  }
+
+  async onSubmitPassword() {
+    if (this.passwordForm.valid) {
+      this.loading = true;
+      this.errorMessage = '';
+
+      try {
+        // Enviar solo los datos de cambio de contraseña
+        await this.authService.updateProfile(this.passwordForm.value);
+        
+        // Verificar explícitamente que seguimos autenticados
+        const isAuth = await this.authService.isAuthenticated();
+        if (!isAuth) {
+          await this.authService.getUser(true);
+          this.authService.setAuthStatus(true);
+        }
+        
+        this.router.navigate(['/profile']);
+      } catch (error: any) {
+        this.errorMessage = error?.response?.data?.message || 'Error al actualizar la contraseña.';
+      } finally {
+        this.loading = false;
+      }
+    } else {
+      this.passwordForm.markAllAsTouched();
     }
   }
   

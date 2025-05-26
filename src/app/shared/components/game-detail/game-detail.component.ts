@@ -1,3 +1,4 @@
+// Importem els components i mòduls necessaris
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,34 +7,35 @@ import { LibraryService, GameStatus } from '../../../services/library/library.se
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth.service';
 
+
+// Definim el component de detalls del joc
 @Component({
   selector: 'app-game-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <-- AÑADE FormsModule AQUÍ
+  imports: [CommonModule, FormsModule],
   templateUrl: './game-detail.component.html',
   styleUrls: ['./game-detail.component.css']
 })
 
 export class GameDetailComponent implements OnInit {
+  // Propietats per emmagatzemar la informació del joc i estats
   gameId!: number;
   game: any = null;
   isLoading: boolean = true;
   error: string | null = null;
   isAuthenticated = false;
+  library: any[] = [];
+  userLibraryEntry: any = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private gamesService: GamesService,
     private libraryService: LibraryService,
-    private authService: AuthService // <--- Añade esto
+    private authService: AuthService
   ) { }
 
-
-
-  library: any[] = [];
-  userLibraryEntry: any = null;
-
+  // Inicialitzem el component
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.gameId = +params['id'];
@@ -43,23 +45,25 @@ export class GameDetailComponent implements OnInit {
     this.checkAuth();
   }
 
+  // Comprovem l'estat d'autenticació
   async checkAuth() {
     this.isAuthenticated = await this.authService.isAuthenticated();
   }
 
+  // Carreguem la biblioteca de l'usuari
   loadUserLibrary(): void {
     this.libraryService.getUserLibrary().subscribe({
       next: (data) => {
         this.library = data;
         this.userLibraryEntry = this.library.find(entry => entry.rawg_id === this.gameId) || null;
-        console.log('Entrada de biblioteca encontrada:', this.userLibraryEntry);
       },
       error: (err) => {
-        console.error('Error al cargar la biblioteca del usuario:', err);
+        console.error('Error al carregar la biblioteca de l\'usuari:', err);
       }
     });
   }
 
+  // Carreguem els detalls del joc
   loadGameDetails(): void {
     this.isLoading = true;
     this.error = null;
@@ -70,42 +74,45 @@ export class GameDetailComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error al cargar los detalles del juego:', err);
-        this.error = 'No se pudieron cargar los detalles del juego. Por favor, inténtalo de nuevo más tarde.';
+        console.error('Error al carregar els detalls del joc:', err);
+        this.error = 'No s\'han pogut carregar els detalls del joc. Si us plau, intenta-ho de nou més tard.';
         this.isLoading = false;
       }
     });
   }
 
+  // Tornem a la pàgina anterior
   goBack(): void {
     this.router.navigate(['/games']);
   }
 
+  // Actualitzem l'estat del joc a la biblioteca
   updateGameStatus(status: GameStatus | null): void {
     if (!status) return;
-    console.log(`Status updated to: ${status}`);
     this.libraryService.addToLibrary(this.gameId, status).subscribe({
       next: () => {
-        console.log('Juego añadido correctamente');
+        console.log('Joc afegit correctament');
       },
       error: (err) => {
-        console.error('Error al añadir:', err);
-        this.error = 'Error al guardar el juego';
+        console.error('Error al afegir:', err);
+        this.error = 'Error al desar el joc';
       }
     });
   }
+
+  // Propietats i mètodes per gestionar el modal d'afegir/editar
   GameStatus = GameStatus;
   showAddModal = false;
   addStatus: GameStatus | null = null;
   addNotes: string | null = null;
   addRating: number | null = null;
-
   selectedStatus: GameStatus | null = null;
+  
 
+  // Obrim el modal d'afegir/editar
   openAddModal(): void {
     this.showAddModal = true;
     if (this.userLibraryEntry) {
-      // Si ya existe, precarga los datos para editar
       this.addStatus = this.userLibraryEntry.status;
       this.addNotes = this.userLibraryEntry.notes;
       this.addRating = this.userLibraryEntry.rating;
@@ -116,20 +123,21 @@ export class GameDetailComponent implements OnInit {
     }
   }
 
+  // Tanquem el modal
   closeAddModal(): void {
     this.showAddModal = false;
   }
 
-  // Añadir estas propiedades para la notificación
+  // Propietats per gestionar notificacions i confirmacions
   showNotification = false;
   notificationMessage = '';
   notificationTimeout: any = null;
-  showDeleteConfirmation = false; // Nueva propiedad para el modal de confirmación
+  showDeleteConfirmation = false;
 
+  // Afegim o actualitzem un joc a la biblioteca
   addToLibrary(): void {
     if (!this.addStatus) return;
     
-    // Si ya existe una entrada, actualizarla en lugar de crear una nueva
     if (this.userLibraryEntry && this.userLibraryEntry.rawg_id) {
       this.libraryService.updateLibraryEntry(
         this.userLibraryEntry.rawg_id, 
@@ -139,17 +147,16 @@ export class GameDetailComponent implements OnInit {
       ).subscribe({
         next: () => {
           this.closeAddModal();
-          this.loadUserLibrary(); // Refresca el estado tras actualizar
-          this.showSuccessNotification('Juego actualizado en tu biblioteca correctamente');
+          this.loadUserLibrary();
+          this.showSuccessNotification('Juego actualizado correctamente');
         },
         error: (err) => {
           this.closeAddModal();
-          this.error = 'Error al actualizar el juego';
-          console.error('Error al actualizar:', err);
+          this.error = 'Error al actualitzar el joc';
+          console.error('Error al actualitzar:', err);
         }
       });
     } else {
-      // Si no existe, crear una nueva entrada
       this.libraryService.addToLibrary(
         this.gameId, 
         this.addStatus, 
@@ -158,80 +165,63 @@ export class GameDetailComponent implements OnInit {
       ).subscribe({
         next: () => {
           this.closeAddModal();
-          this.loadUserLibrary(); // Refresca el estado tras guardar
-          this.showSuccessNotification('Juego añadido a tu biblioteca correctamente');
+          this.loadUserLibrary();
+          this.showSuccessNotification('Juego añadido a la biblioteca correctamente');
         },
         error: (err) => {
           this.closeAddModal();
           this.error = 'Error al guardar el juego';
-          console.error('Error al guardar:', err);
+          console.error('Error al desar:', err);
         }
       });
     }
   }
 
-  // Método para mostrar el modal de confirmación de eliminación
+  // Mètodes per gestionar la confirmació d'eliminació
   openDeleteConfirmation(): void {
     this.showDeleteConfirmation = true;
   }
 
-  // Método para cerrar el modal de confirmación
   closeDeleteConfirmation(): void {
     this.showDeleteConfirmation = false;
   }
 
-  // Método para eliminar el juego de la biblioteca
-  // Método para eliminar el juego de la biblioteca
+  // Eliminem un joc de la biblioteca
   deleteFromLibrary(): void {
     if (!this.userLibraryEntry || !this.userLibraryEntry.id) {
-      console.error('No se puede eliminar: ID no disponible', this.userLibraryEntry);
+      console.error('No es pot eliminar: ID no disponible', this.userLibraryEntry);
       this.error = 'Error al eliminar: ID no disponible';
       return;
     }
     
-    console.log('Intentando eliminar juego con ID:', this.userLibraryEntry.rawg_id);
-    
     this.libraryService.deleteFromLibrary(this.userLibraryEntry.rawg_id).subscribe({
       next: (response) => {
-        console.log('Juego eliminado correctamente:', response);
         this.closeDeleteConfirmation();
         this.closeAddModal();
-        this.userLibraryEntry = null; // Eliminar la referencia local
-        this.loadUserLibrary(); // Recargar la biblioteca
-        this.showSuccessNotification('Juego eliminado de tu biblioteca correctamente');
+        this.userLibraryEntry = null;
+        this.loadUserLibrary();
+        this.showSuccessNotification('Juego eliminado correctamente');
       },
       error: (err) => {
-        console.error('Error al eliminar el juego:', err);
-        this.closeDeleteConfirmation();
-        this.error = 'Error al eliminar el juego de la biblioteca';
+        console.error('Error al eliminar:', err);
+        this.error = 'Error al eliminar el joc';
       }
     });
   }
 
-  // Método para mostrar la notificación de éxito
+  // Mètode per mostrar notificacions d'èxit
   showSuccessNotification(message: string): void {
-    // Limpiar cualquier timeout existente
-    if (this.notificationTimeout) {
-      clearTimeout(this.notificationTimeout);
-    }
-    
     this.notificationMessage = message;
     this.showNotification = true;
-    
-    // Ocultar la notificación después de 3 segundos
-    this.notificationTimeout = setTimeout(() => {
-      this.showNotification = false;
-    }, 3000);
   }
 
-  // Método para cerrar la notificación manualmente
+  // Mètode per tancar la notificació
   closeNotification(): void {
     this.showNotification = false;
-    if (this.notificationTimeout) {
-      clearTimeout(this.notificationTimeout);
-    }
+    this.notificationMessage = '';
   }
 
+  // Mètode per obtenir el text de l'estat en català
   getStatusText(status: GameStatus): string {
     switch (status) {
       case GameStatus.PLAYING:
@@ -245,7 +235,7 @@ export class GameDetailComponent implements OnInit {
       case GameStatus.ON_HOLD:
         return 'En pausa';
       default:
-        return '';
+        return 'Desconocido';
     }
   }
 }

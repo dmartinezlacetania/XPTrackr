@@ -1,3 +1,4 @@
+// Importem els components i mòduls necessaris
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
@@ -5,8 +6,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NextGamesComponent } from '../next-games/next-games.component';
 
-
-
+// Definim el component del tauler principal
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, NextGamesComponent],
@@ -14,7 +14,7 @@ import { NextGamesComponent } from '../next-games/next-games.component';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-
+  // Informació de l'usuari i estats
   user: any = null;
   loading: boolean = true;
   errorMessage: string = '';
@@ -25,6 +25,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
+  // Inicialitzem el component
   ngOnInit(): void {
     this.authSubscription = this.authService.authStatus$.subscribe(async (isAuthenticated) => {
       this.loading = true;
@@ -46,10 +47,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Netegem la subscripció quan es destrueix el component
   ngOnDestroy(): void {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
   }
-
 }

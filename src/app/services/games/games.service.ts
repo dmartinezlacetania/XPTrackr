@@ -12,7 +12,6 @@ export class GamesService {
   // URL base per les crides a l'API de jocs
   private apiUrl = `${environment.apiUrl}/games`;
 
-  // Injectem el client HTTP per fer les peticions
   constructor(private http: HttpClient) { }
 
   // Mètode per cercar jocs segons un terme de cerca
@@ -28,5 +27,10 @@ export class GamesService {
   // Mètode per obtenir els detalls d'un joc específic
   getGameDetails(gameId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${gameId}`);
+  }
+
+  // Mètode per obtenir els jocs de la propera setmana
+  getNextWeekGames(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/next-games`);
   }
 }

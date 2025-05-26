@@ -1,3 +1,4 @@
+// Importem els components i mòduls necessaris
 import { Component } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -5,14 +6,17 @@ import { Router } from '@angular/router';
 import axios from 'axios';
 import { CommonModule } from '@angular/common';
 
+// Configurem axios per acceptar cookies
 axios.defaults.withCredentials = true;
 
+// Funció per validar que les contrasenyes coincideixen
 function passwordMatchValidator(group: FormGroup): { [key: string]: any } | null {
   const password = group.get('password');
   const confirmPassword = group.get('password_confirmation');
   return password && confirmPassword && password.value === confirmPassword.value ? null : { 'passwordMismatch': true };
 }
 
+// Definim el component de registre
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -21,6 +25,7 @@ function passwordMatchValidator(group: FormGroup): { [key: string]: any } | null
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
+  // Formulari de registre i estats
   registroForm: FormGroup;
   loading = false;
   errorMessage = '';
@@ -30,6 +35,7 @@ export class RegisterComponent {
     private authService: AuthService,
     private router: Router
   ) {
+    // Inicialitzem el formulari amb validacions
     this.registroForm = this.fb.group(
       {
         name: ['', Validators.required],
@@ -41,12 +47,14 @@ export class RegisterComponent {
     );
   }
 
+  // Validador personalitzat per comprovar que les contrasenyes coincideixen
   passwordMatchValidator(group: AbstractControl) {
     const password = group.get('password')?.value;
     const confirmPassword = group.get('password_confirmation')?.value;
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
+  // Mètode per gestionar l'enviament del formulari
   async onSubmit() {
     if (this.registroForm.valid) {
       this.loading = true;

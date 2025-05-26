@@ -1,9 +1,11 @@
+// Importem els components i mòduls necessaris
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../services/auth/auth.service'; // Asegúrate de que la ruta es correcta
+import { AuthService } from '../../../services/auth/auth.service';
 
+// Definim el component d'inici de sessió
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -12,6 +14,7 @@ import { AuthService } from '../../../services/auth/auth.service'; // Asegúrate
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
+  // Formulari d'inici de sessió i estats
   loginForm: FormGroup;
   loading = false;
   errorMessage = '';
@@ -21,12 +24,14 @@ export class LoginComponent {
     private router: Router,
     private authService: AuthService
   ) {
+    // Inicialitzem el formulari amb validacions
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
   }
 
+  // Mètode per gestionar l'enviament del formulari
   async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
       this.errorMessage = 'Si us plau, completa tots els camps.';

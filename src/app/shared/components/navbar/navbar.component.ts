@@ -1,3 +1,4 @@
+// Importem els components i mòduls necessaris
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from '../../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
@@ -6,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { GameSearchComponent } from '../game-search/game-search.component';
 import { FormsModule } from '@angular/forms';
 
+// Definim el component de la barra de navegació
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -14,26 +16,33 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
+  // Estats d'autenticació i informació de l'usuari
   isAuthenticated: boolean = false;
   username: string = '';
   userEmail: string = '';
   avatarUrl: string | null = null;
+  
+  // Estats dels menús desplegables
   isUserMenuOpen: boolean = false;
   isSearchOpen: boolean = false;
-  searchTerm: string = ''; // Para el input de búsqueda
+  searchTerm: string = '';
+  
+  // Subscripció per gestionar l'estat d'autenticació
   private subscription!: Subscription;
 
+  // Referència al menú desplegable d'usuari
   @ViewChild('userMenuDropdown') userMenuDropdown!: ElementRef;
 
   constructor(private authService: AuthService) {}
 
+  // Inicialitzem el component
   ngOnInit(): void {
     this.subscription = this.authService.authStatus$.subscribe(async (status) => {
       this.isAuthenticated = status;
 
       if (status) {
         const user = await this.authService.getUser();
-        this.username = user?.name || 'Usuario';
+        this.username = user?.name || 'Usuari';
         this.userEmail = user?.email || '';
         if (user && user.avatar) {
           this.avatarUrl = this.authService.getAvatarUrl(user.avatar);
@@ -48,18 +57,20 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  // Netegem la subscripció quan es destrueix el component
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
 
+  // Mètode per alternar el menú d'usuari
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;
-    // Si abrimos el menú de usuario, cerramos la búsqueda si está abierta
     if (this.isUserMenuOpen && this.isSearchOpen) {
       this.isSearchOpen = false;
     }
   }
 
+  // Detectem clics fora del menú d'usuari per tancar-lo
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (this.userMenuDropdown && !this.userMenuDropdown.nativeElement.contains(event.target)) {
@@ -67,14 +78,15 @@ export class NavbarComponent implements OnInit {
     }
   }
 
+  // Mètode per tancar la sessió
   async logout(): Promise<void> {
     await this.authService.logout();
     location.reload();
   }
 
+  // Mètodes per gestionar la cerca
   toggleSearch(): void {
     this.isSearchOpen = !this.isSearchOpen;
-    // Si abrimos la búsqueda, cerramos el menú de usuario si está abierto
     if (this.isSearchOpen && this.isUserMenuOpen) {
       this.isUserMenuOpen = false;
     }
@@ -82,7 +94,6 @@ export class NavbarComponent implements OnInit {
 
   openSearchResults(): void {
     this.isSearchOpen = true;
-    // Si abrimos la búsqueda, cerramos el menú de usuario si está abierto
     if (this.isUserMenuOpen) {
       this.isUserMenuOpen = false;
     }
@@ -94,13 +105,5 @@ export class NavbarComponent implements OnInit {
 
   clearSearch(): void {
     this.searchTerm = '';
-    // Mantenemos el panel de búsqueda abierto pero con resultados vacíos
-  }
-
-  onSearchInput(): void {
-    // Si el usuario escribe algo, aseguramos que el panel de resultados esté abierto
-    if (!this.isSearchOpen) {
-      this.openSearchResults();
-    }
   }
 }

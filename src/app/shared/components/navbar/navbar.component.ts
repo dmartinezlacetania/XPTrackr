@@ -42,7 +42,7 @@ export class NavbarComponent implements OnInit {
 
       if (status) {
         const user = await this.authService.getUser();
-        this.username = user?.name || 'Usuari';
+        this.username = user?.name || 'Usuario';
         this.userEmail = user?.email || '';
         if (user && user.avatar) {
           this.avatarUrl = this.authService.getAvatarUrl(user.avatar);
@@ -105,5 +105,13 @@ export class NavbarComponent implements OnInit {
 
   clearSearch(): void {
     this.searchTerm = '';
+    // Mantenemos el panel de búsqueda abierto pero con resultados vacíos
+  }
+
+  onSearchInput(): void {
+    // Si el usuario escribe algo, aseguramos que el panel de resultados esté abierto
+    if (!this.isSearchOpen) {
+      this.openSearchResults();
+    }
   }
 }
